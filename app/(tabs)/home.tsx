@@ -33,7 +33,7 @@ const home = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const heartIcon = require("../../assets/icons/heartwhite.png");
+  const heartIcon = require("../../assets/icons/done.png");
 
   const fetchData = async () => {
     setLoading(true);
