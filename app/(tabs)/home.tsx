@@ -1,6 +1,5 @@
 import { useRoute } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import ImageCard from "@/components/ImageCard";
 import {
   Image,
   StyleSheet,
@@ -11,6 +10,7 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
+import BookCard from "@/components/BookCard";
 
 const home = () => {
   type RouteParams = {
@@ -20,93 +20,81 @@ const home = () => {
   const route = useRoute();
   const { username } = route.params as RouteParams;
 
-  interface Hit {
+  interface Book {
     id: number;
-    user: string;
-    downloads: number;
-    webformatURL: string;
-    userImageURL: string;
-    likes: number;
-    comments: number;
+    title?: string;
+    author: string;
+    publicationYear: number; // Use camelCase for consistency with TypeScript conventions
+    genre: string[];
+    description: string;
+    coverImage: string;
   }
 
-  const [hits, setHits] = useState<Hit[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("Nature"); 
+  const [books, setBooks] = useState<Book[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-    const heartIcon = require("../../assets/icons/heartwhite.png")
-
-
+  const heartIcon = require("../../assets/icons/heartwhite.png");
 
   const fetchData = async () => {
-    setLoading(true); 
+    setLoading(true);
     try {
       const response = await fetch(
-        `https://pixabay.com/api/?key=47359681-36a47568ecb654a2ed2b05623&q=${searchTerm}&image_type=photo&pretty=true`
+        "https://www.freetestapi.com/api/v1/books"
       );
       const data = await response.json();
-      setHits(data.hits); 
+      setBooks(data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
-  
-
 
   useEffect(() => {
     fetchData();
   }, [searchTerm]);
 
   return (
-
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>        
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greetingText}>Dear {username || "Guest"}</Text>
-            <Text style={styles.welcomeText}>Welcome to EduLearn</Text>
-          </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.greetingContainer}>
+          <Text style={styles.greetingText}>Dear <Text style={{color: "#4A90E2"}}>{username || "Guest"}</Text> ,</Text>
+          <Text style={styles.welcomeText}>Welcome to <Text style={{color: "#4A90E2"}}>EduLearn</Text></Text>
         </View>
+      </View>
 
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Search for images..."
-            placeholderTextColor="#DE3163"
-            value={searchTerm}
-            onChangeText={(text) => setSearchTerm(text)}
-          />
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Search for books..."
+          value={searchTerm}
+          onChangeText={(text) => setSearchTerm(text)}
+        />
 
-          <TouchableOpacity style={styles.floatingButton}>
-            <TouchableOpacity>
-              <Image style={{ height: 25, width: 25 }} source={heartIcon} />
-            </TouchableOpacity>
-            <Text style={styles.floatingButtonText}>4</Text>
+        <TouchableOpacity style={styles.floatingButton}>
+          <TouchableOpacity>
+            <Image style={{ height: 25, width: 25 }} source={heartIcon} />
           </TouchableOpacity>
+          <Text style={styles.floatingButtonText}>10</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.innerContainer}>
+          {books.map((book) => (
+            <BookCard
+              key={book.id}
+              title={book.title || "Untitled"}
+              author={book.author}
+              publicationYear={book.publicationYear}
+              genre={book.genre}
+              description={book.description}
+              coverImage={book.coverImage}
+            />
+          ))}
         </View>
-
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.innerContainer}>
-            {loading ? (
-              <Text>Loading...</Text>
-            ) : hits.length > 0 ? (
-              <View>
-                {hits.map((hit) => (
-                  <ImageCard
-                    key={hit.id}
-                    creator={hit.user}
-                    downloads={`${(hit.downloads / 1000).toFixed(1)}k`}
-                    imageURL={hit.webformatURL}
-                  />
-                ))}
-              </View>
-            ) : (
-              <Text>No results found for {searchTerm}</Text>
-            )}
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -120,8 +108,9 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "center",
+    marginLeft: 16,
     alignItems: "center",
+    marginTop: 40,
   },
   logo: {
     height: 50,
@@ -130,6 +119,8 @@ const styles = StyleSheet.create({
   },
   greetingContainer: {
     flexDirection: "column",
+    marginLeft: 36,
+    marginBottom: 10,
   },
   greetingText: {
     color: "black",
@@ -145,15 +136,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-
     paddingHorizontal: 16,
-    marginBottom: 20,
+    marginBottom: 5,
   },
   input: {
     height: 50,
     borderWidth: 2,
-    borderColor: "#DE3163",
-    borderRadius: 40,
+    borderColor: "#4A90E2",
+    borderRadius: 10,
     paddingHorizontal: 10,
     width: "80%",
     fontFamily: "SpaceMono",
@@ -186,28 +176,26 @@ const styles = StyleSheet.create({
     fontFamily: "SpaceMono",
   },
   floatingButton: {
-    flexDirection:"row",
-    
-    
+    flexDirection: "row",
     position: "absolute",
-    bottom: 105, 
-    right: 24, 
-    backgroundColor: "#DE3163", 
-    borderRadius: 25,
-    width: 60,
-    height: 30,
+    bottom: 105,
+    right: 24,
+    backgroundColor: "#4A90E2",
+    borderRadius: 10,
+    width: 70,
+    height: 36,
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000, 
-    shadowColor: "#000", 
+    zIndex: 1000,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 3,
-    elevation: 5, 
+    elevation: 5,
   },
   floatingButtonText: {
     color: "white",
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
     marginLeft: 10,

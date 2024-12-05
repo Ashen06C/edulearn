@@ -23,7 +23,7 @@ const TabLayout = () => {
     <LikeProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: "#FFA001",
+          tabBarActiveTintColor: "#4A90E2",
           tabBarInactiveTintColor: "#CDCDE0",
           tabBarShowLabel: false,
           tabBarStyle: {
@@ -39,7 +39,7 @@ const TabLayout = () => {
             position: "absolute",
             width: "80%",
             alignSelf: "center",
-            marginBottom: 10,
+            marginBottom: 20,
             marginLeft: 40,
           },
         }}
@@ -68,7 +68,7 @@ const TabLayout = () => {
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <PlaceholderIcon
-                source={require("../../assets/icons/create.png")}
+                source={require("../../assets/icons/heartwhite.png")}
                 color={color}
               />
             ),
