@@ -19,7 +19,7 @@ export default function HomeScreen() {
     
     const timer = setTimeout(() => {
       setIsAnimationFinished(true);
-    }, 6500); 
+    }, 5000); 
 
     return () => clearTimeout(timer);
   }, []);

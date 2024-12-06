@@ -21,7 +21,7 @@ const Favorites = () => {
     description: string;
     coverImage: string;
   }
-
+  
   const [favoriteBooks, setFavoriteBooks] = useState<Book[]>([]);
   const [newBook, setNewBook] = useState<Partial<Book>>({
     title: "",
@@ -31,20 +31,27 @@ const Favorites = () => {
     description: "",
     coverImage: "",
   });
-
+  
   const fetchFavoriteBooks = async () => {
     try {
       const response = await fetch("https://freetestapi.com/api/v1/books?limit=45");
       const data = await response.json();
   
-      // Slice the data from index 10 to 15
+      // Slice the data from index 30 to 45
       const slicedData = data.slice(30, 45);
   
-      setFavoriteBooks(slicedData);
+      // Add a random image to each dataset
+      const booksWithImages = slicedData.map((book: Book) => ({
+        ...book,
+        coverImage: `https://picsum.photos/seed/${book.id}/200/300`, // Random image based on book ID
+      }));
+  
+      setFavoriteBooks(booksWithImages);
     } catch (error) {
       console.error("Error fetching favorite books:", error);
     }
   };
+  
   
 
   useEffect(() => {

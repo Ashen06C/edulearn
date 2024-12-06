@@ -18,9 +18,9 @@ const AlreadyRead = () => {
     description: string;
     coverImage: string;
   }
-
+  
   const [readBooks, setReadBooks] = useState<Book[]>([]);
-
+  
   // Fetch already read books from storage or API
   const fetchReadBooks = async () => {
     try {
@@ -29,14 +29,21 @@ const AlreadyRead = () => {
       const data = await response.json();
   
       // Sort data by ID in descending order
-      const sortedData = data.sort((a: { id: number; }, b: { id: number; }) => b.id - a.id);
+      const sortedData = data.sort((a: { id: number }, b: { id: number }) => b.id - a.id);
   
-      // Update state or handle sorted data
-      setReadBooks(sortedData);
+      // Add a random image to each dataset
+      const booksWithImages = sortedData.map((book: Book) => ({
+        ...book,
+        coverImage: `https://picsum.photos/seed/${book.id}/200/300`, // Random image based on book ID
+      }));
+  
+      // Update state with data including random images
+      setReadBooks(booksWithImages);
     } catch (error) {
       console.error("Error fetching already read books:", error);
     }
   };
+  
   
 
   useEffect(() => {

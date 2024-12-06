@@ -13,7 +13,7 @@ import {
 import BookCard from "@/components/BookCard";
 import { useLikeContext } from "@/contexts/LikeContext";
 
-const home = () => {
+const Home = () => {
   type RouteParams = {
     username?: string;
   };
@@ -30,45 +30,71 @@ const home = () => {
     description: string;
     coverImage: string;
   }
-  
+
   const [books, setBooks] = useState<Book[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const heartIcon = require("../../assets/icons/done.png");
-  
+
   const fetchData = async () => {
     setLoading(true);
     try {
       const response = await fetch("https://www.freetestapi.com/api/v1/books");
       const data = await response.json();
-  
-      // Add a real random book image to each book
-      const booksWithImages = data.map((book: Book) => ({
-        ...book,
-        coverImage: `https://picsum.photos/seed/${book.id}/200/300`, // Real random image based on book ID
-      }));
-  
+
+      // Add a real random book image to each book and sort by id in descending order
+      const booksWithImages = data
+        .map((book: Book) => ({
+          ...book,
+          coverImage: `https://picsum.photos/seed/${book.id}/200/300`, // Random image based on book ID
+        }))
+        .sort((a: Book, b: Book) => b.id - a.id); // Sort in descending order by id
+
       setBooks(booksWithImages);
+      setFilteredBooks(booksWithImages); // Set initial filtered books
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
-  
-  
+
+  const handleSearch = (text: string) => {
+    setSearchTerm(text);
+    if (text.trim() === "") {
+      setFilteredBooks(books); // Show all books if search is empty
+    } else {
+      const filtered = books.filter((book) =>
+        book.title?.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredBooks(filtered);
+    }
+  };
+
   const { likeCount } = useLikeContext();
 
   useEffect(() => {
     fetchData();
-  }, [searchTerm]);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.greetingContainer}>
-          <Text style={styles.greetingText}>Hello <Text style={{fontFamily: "SpaceMono",color: "#4A90E2"}}>{username || "Guest"}</Text> ,</Text>
-          <Text style={styles.welcomeText}><Text style={{fontFamily: "SpaceMono",color: "#4A90E2"}}>EduLearn </Text>is here !</Text>
+          <Text style={styles.greetingText}>
+            Hello{" "}
+            <Text style={{ fontFamily: "SpaceMono", color: "#4A90E2" }}>
+              {username || "Guest"}
+            </Text>
+            ,
+          </Text>
+          <Text style={styles.welcomeText}>
+            <Text style={{ fontFamily: "SpaceMono", color: "#4A90E2" }}>
+              EduLearn{" "}
+            </Text>
+            is here!
+          </Text>
         </View>
       </View>
 
@@ -77,7 +103,7 @@ const home = () => {
           style={styles.input}
           placeholder="Search books..."
           value={searchTerm}
-          onChangeText={(text) => setSearchTerm(text)}
+          onChangeText={handleSearch}
         />
 
         <TouchableOpacity style={styles.floatingButton}>
@@ -88,22 +114,26 @@ const home = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.innerContainer}>
-          {books.map((book) => (
-            <BookCard
-            read={false}
-              key={book.id}
-              title={book.title || "Untitled"}
-              author={book.author}
-              publicationYear={book.publicationYear}
-              genre={book.genre}
-              description={book.description}
-              coverImage={book.coverImage}
-            />
-          ))}
-        </View>
-      </ScrollView>
+      {loading ? (
+        <Text style={styles.loadingText}>Loading books...</Text>
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.innerContainer}>
+            {filteredBooks.map((book) => (
+              <BookCard
+                read={false}
+                key={book.id}
+                title={book.title || "Untitled"}
+                author={book.author}
+                publicationYear={book.publicationYear}
+                genre={book.genre}
+                description={book.description}
+                coverImage={book.coverImage}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
@@ -121,11 +151,6 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     alignItems: "center",
     marginTop: 40,
-  },
-  logo: {
-    height: 50,
-    width: 50,
-    margin: 20,
   },
   greetingContainer: {
     flexDirection: "column",
@@ -156,33 +181,6 @@ const styles = StyleSheet.create({
     width: "80%",
     fontFamily: "SpaceMono",
   },
-  searchButton: {
-    backgroundColor: "white",
-    borderColor: "#DE3163",
-    borderWidth: 1,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 10,
-  },
-  searchButtonText: {
-    fontSize: 24,
-    color: "#DE3163",
-  },
-  scrollContent: {
-    padding: 16,
-    fontFamily: "SpaceMono",
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  innerContainer: {
-    flex: 1,
-    flexDirection: "column",
-    alignItems: "center",
-    fontFamily: "SpaceMono",
-  },
   floatingButton: {
     flexDirection: "row",
     position: "absolute",
@@ -208,6 +206,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginLeft: 10,
   },
+  scrollContent: {
+    padding: 16,
+    fontFamily: "SpaceMono",
+    marginTop: 0,
+    paddingTop: 0,
+  },
+  innerContainer: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    fontFamily: "SpaceMono",
+  },
+  loadingText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 18,
+    color: "#4A90E2",
+  },
 });
 
-export default home;
+export default Home;
