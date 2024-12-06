@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useLikeContext } from "@/contexts/LikeContext";
 
 const BookCard = ({
+  read,
   title,
   author,
   publicationYear,
@@ -10,6 +11,7 @@ const BookCard = ({
   description,
   coverImage,
 }: {
+  read: boolean;
   title: string;
   author: string;
   publicationYear: number;
@@ -19,9 +21,12 @@ const BookCard = ({
 }) => {
   const [Liked, setLiked] = useState(false);
 
-  const heartIcon = Liked
+  const readIcon = Liked
     ? require("../assets/icons/donenil.png")
     : require("../assets/icons/doneline.png");
+
+
+  const bl=  require("../assets/icons/donenil.png");
 
   const { incrementLike, decrementLike } = useLikeContext();
 
@@ -43,9 +48,20 @@ const BookCard = ({
         <Text style={styles.genre}>Genre: {genre.join(", ")}</Text>
         <Text style={styles.description}>{description}</Text>
       </View>
-      <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
-        <Image style={styles.likeIcon} source={heartIcon} />
+      <View style={styles.likeButtonContainer}>
+      {read ? (
+        
+        <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
+        <Image style={styles.likeIcon} source={bl} />
       </TouchableOpacity>
+
+
+      ):(
+        <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
+        <Image style={styles.likeIcon} source={readIcon} />
+      </TouchableOpacity>
+      )}
+      </View>
     </View>
   );
 };
@@ -93,11 +109,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#444",
   },
-  likeButton: {
+  likeButtonContainer:{
     position: "absolute",
     top: 10,
     right: 10,
-    padding: 5,
+    padding: 4,
+    backgroundColor:"#fff",
+    borderRadius: 9,
+    boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+  },
+  likeButton: {
+    // position: "absolute",
+    // top: 10,
+    // right: 10,
+    padding: 3,
   },
   likeIcon: {
     width: 25,

@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import BookCard from "@/components/BookCard";
+import { useLikeContext } from "@/contexts/LikeContext";
 
 const home = () => {
   type RouteParams = {
@@ -24,31 +25,39 @@ const home = () => {
     id: number;
     title?: string;
     author: string;
-    publicationYear: number; // Use camelCase for consistency with TypeScript conventions
+    publicationYear: number;
     genre: string[];
     description: string;
     coverImage: string;
   }
-
+  
   const [books, setBooks] = useState<Book[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const heartIcon = require("../../assets/icons/done.png");
-
+  
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://www.freetestapi.com/api/v1/books"
-      );
+      const response = await fetch("https://www.freetestapi.com/api/v1/books");
       const data = await response.json();
-      setBooks(data);
+  
+      // Add a real random book image to each book
+      const booksWithImages = data.map((book: Book) => ({
+        ...book,
+        coverImage: `https://picsum.photos/seed/${book.id}/200/300`, // Real random image based on book ID
+      }));
+  
+      setBooks(booksWithImages);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  const { likeCount } = useLikeContext();
 
   useEffect(() => {
     fetchData();
@@ -58,24 +67,24 @@ const home = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.greetingContainer}>
-          <Text style={styles.greetingText}>Dear <Text style={{color: "#4A90E2"}}>{username || "Guest"}</Text> ,</Text>
-          <Text style={styles.welcomeText}>Welcome to <Text style={{color: "#4A90E2"}}>EduLearn</Text></Text>
+          <Text style={styles.greetingText}>Hello <Text style={{fontFamily: "SpaceMono",color: "#4A90E2"}}>{username || "Guest"}</Text> ,</Text>
+          <Text style={styles.welcomeText}><Text style={{fontFamily: "SpaceMono",color: "#4A90E2"}}>EduLearn </Text>is here !</Text>
         </View>
       </View>
 
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Search for books..."
+          placeholder="Search books..."
           value={searchTerm}
           onChangeText={(text) => setSearchTerm(text)}
         />
 
         <TouchableOpacity style={styles.floatingButton}>
           <TouchableOpacity>
-            <Image style={{ height: 25, width: 25 }} source={heartIcon} />
+            <Image style={{ height: 20, width: 20 }} source={heartIcon} />
           </TouchableOpacity>
-          <Text style={styles.floatingButtonText}>10</Text>
+          <Text style={styles.floatingButtonText}>{likeCount.toString()}</Text>
         </TouchableOpacity>
       </View>
 
@@ -83,6 +92,7 @@ const home = () => {
         <View style={styles.innerContainer}>
           {books.map((book) => (
             <BookCard
+            read={false}
               key={book.id}
               title={book.title || "Untitled"}
               author={book.author}
@@ -124,12 +134,10 @@ const styles = StyleSheet.create({
   },
   greetingText: {
     color: "black",
-    fontFamily: "SpaceMono",
     fontSize: 20,
   },
   welcomeText: {
     color: "black",
-    fontFamily: "SpaceMono",
     fontSize: 25,
   },
   searchContainer: {

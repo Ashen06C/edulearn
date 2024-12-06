@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Image,
   StyleSheet,
@@ -8,78 +8,120 @@ import {
   ScrollView,
   View,
   TouchableOpacity,
-  Button,
-  Alert,
 } from "react-native";
+import BookCard from "@/components/BookCard";
 
-const favorite = () => {
-  const [imageName, setImageName] = useState<string>(""); 
-  const [uploadedImage, setUploadedImage] = useState<any>(null); 
+const Favorites = () => {
+  interface Book {
+    id: number;
+    title?: string;
+    author: string;
+    publicationYear: number;
+    genre: string[];
+    description: string;
+    coverImage: string;
+  }
 
-  const handleUploadImage = () => {
-    Alert.alert("Upload", "Image upload functionality not implemented yet.");
+  const [favoriteBooks, setFavoriteBooks] = useState<Book[]>([]);
+  const [newBook, setNewBook] = useState<Partial<Book>>({
+    title: "",
+    author: "",
+    publicationYear: undefined,
+    genre: [],
+    description: "",
+    coverImage: "",
+  });
+
+  const fetchFavoriteBooks = async () => {
+    try {
+      const response = await fetch("https://freetestapi.com/api/v1/books?limit=45");
+      const data = await response.json();
+  
+      // Slice the data from index 10 to 15
+      const slicedData = data.slice(30, 45);
+  
+      setFavoriteBooks(slicedData);
+    } catch (error) {
+      console.error("Error fetching favorite books:", error);
+    }
   };
+  
 
-  const handleSubmit = () => {
-    if (!imageName) {
-      Alert.alert("Error", "Please provide an image name.");
-      return;
+  useEffect(() => {
+    fetchFavoriteBooks();
+  }, []);
+
+  const handleAddBook = () => {
+    if (newBook.title && newBook.author) {
+      const bookToAdd: Book = {
+        id: favoriteBooks.length + 1, // Simple ID generator
+        title: newBook.title || "Untitled",
+        author: newBook.author,
+        publicationYear: newBook.publicationYear || new Date().getFullYear(),
+        genre: newBook.genre || [],
+        description: newBook.description || "No description provided.",
+        coverImage: newBook.coverImage || "https://via.placeholder.com/150", // Placeholder image
+      };
+
+      setFavoriteBooks([...favoriteBooks, bookToAdd]);
+      setNewBook({ title: "", author: "", publicationYear: undefined, genre: [], description: "", coverImage: "" });
+    } else {
+      alert("Please provide both title and author!");
     }
-
-    if (!uploadedImage) {
-      Alert.alert("Error", "Please upload an image.");
-      return;
-    }
-
-    Alert.alert("Success", `Image "${imageName}" uploaded successfully!`);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <Image
-          style={styles.logo}
-          source={require("../../assets/images/logo.png")}
-        />
-        <View style={styles.greetingContainer}>
-          <Text style={styles.welcomeText}>Create Post</Text>
-        </View>
+        <Text style={styles.headerText}>My Favorite Books</Text>
       </View>
 
-      {/* Content */}
+      {/* Add New Book Section */}
+      <View style={styles.addBookContainer}>
+        <Text style={styles.addBookHeader}>Add a New Favorite Book</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Title"
+          value={newBook.title}
+          onChangeText={(text) => setNewBook({ ...newBook, title: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Author"
+          value={newBook.author}
+          onChangeText={(text) => setNewBook({ ...newBook, author: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Publication Year"
+          keyboardType="numeric"
+          value={newBook.publicationYear?.toString() || ""}
+          onChangeText={(text) => setNewBook({ ...newBook, publicationYear: parseInt(text, 10) })}
+        />
+        <TouchableOpacity style={styles.addButton} onPress={handleAddBook}>
+          <Text style={styles.addButtonText}>Add Book</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Favorite Books List */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.innerContainer}>
-          {/* Image Name Input */}
-          <TextInput
-            style={styles.input}
-            placeholder="Enter image name"
-            value={imageName}
-            onChangeText={(text) => setImageName(text)}
-          />
-
-          {/* Upload Image */}
-          <TouchableOpacity
-            style={styles.uploadContainer}
-            onPress={handleUploadImage}
-          >
-            {uploadedImage ? (
-              <Image
-                source={{ uri: uploadedImage }}
-                style={styles.uploadedImage}
+          {favoriteBooks.length > 0 ? (
+            favoriteBooks.map((book) => (
+              <BookCard
+              read={false}
+                key={book.id}
+                title={book.title || "Untitled"}
+                author={book.author}
+                publicationYear={book.publicationYear}
+                genre={book.genre}
+                description={book.description}
+                coverImage={book.coverImage}
               />
-            ) : (
-              <Image
-                source={require("../../assets/images/upload.png")}
-                style={styles.uploadIcon}
-              />
-            )}
-          </TouchableOpacity>
-
-          {/* Submit Button */}
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Upload</Text>
-          </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No favorite books found.</Text>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -90,77 +132,62 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f8f8",
-    fontFamily: "SpaceMono",
-    marginTop: 25,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "center",
+    marginTop: 40,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#4A90E2",
+  },
+  addBookContainer: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+  },
+  addBookHeader: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+  },
+  input: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: "#4A90E2",
+    borderRadius: 5,
+    paddingHorizontal: 8,
+    marginBottom: 10,
+  },
+  addButton: {
+    backgroundColor: "#4A90E2",
+    borderRadius: 5,
+    padding: 10,
     alignItems: "center",
   },
-  logo: {
-    height: 50,
-    width: 50,
-    margin: 20,
-  },
-  greetingContainer: {
-    flexDirection: "column",
-  },
-  welcomeText: {
-    color: "black",
-    fontFamily: "SpaceMono",
-    fontSize: 25,
+  addButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   scrollContent: {
     padding: 16,
-    fontFamily: "SpaceMono",
   },
   innerContainer: {
     flex: 1,
+    flexDirection: "column",
     alignItems: "center",
   },
-  input: {
-    height: 50,
-    borderWidth: 2,
-    borderColor: "#DE3163",
-    borderRadius: 40,
-    paddingHorizontal: 16,
-    width: "80%",
-    fontFamily: "SpaceMono",
-    marginBottom: 20,
-  },
-  uploadContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: "80%",
-    height: 150,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#DE3163",
-    marginBottom: 20,
-  },
-  uploadIcon: {
-    width: 60,
-    height: 60,
-    tintColor: "#DE3163",
-  },
-  uploadedImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 12,
-  },
-  submitButton: {
-    backgroundColor: "#DE3163",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 40,
-  },
-  submitButtonText: {
-    color: "white",
-    fontFamily: "SpaceMono",
+  emptyText: {
+    marginTop: 20,
     fontSize: 16,
+    color: "#999",
   },
 });
 
-export default favorite;
+export default Favorites;

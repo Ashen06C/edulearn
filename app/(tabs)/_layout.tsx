@@ -3,15 +3,12 @@ import { Tabs } from "expo-router";
 import { Image, View, StyleSheet } from "react-native";
 import {LikeProvider} from "../../contexts/LikeContext"; // replace with the actual path to LikeProvider
 
-const PlaceholderIcon = ({ source, color }: { source: any; color: string }) => {
+const PlaceholderIcon = ({ source, color, width = 25, height = 25 }: { source: any; color: string; width?: number; height?: number }) => {
   return (
-    
-     
-    
     <View style={styles.iconContainer}>
       <Image
         source={source}
-        style={[styles.iconImage, { tintColor: color }]}
+        style={[styles.iconImage, { tintColor: color, width, height }]}
         resizeMode="contain"
       />
     </View>
@@ -28,8 +25,10 @@ const TabLayout = () => {
           tabBarShowLabel: false,
           tabBarStyle: {
             backgroundColor: "#FFFFFF",
-            borderTopWidth: 0,
-            borderRadius: 24,
+            borderTopWidth: 0.8,
+            borderColor: "#4A90E2",
+            borderWidth: 1,
+            borderRadius: 10,
             height: 40,
             elevation: 5,
             shadowColor: "#000",
@@ -55,6 +54,22 @@ const TabLayout = () => {
               <PlaceholderIcon
                 source={require("../../assets/icons/home.png")}
                 color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="read"
+          options={{
+            title: "Read",
+            headerShown: false,
+
+            tabBarIcon: ({ color }) => (
+              <PlaceholderIcon
+                source={require("../../assets/icons/donenil.png")}
+                color={color}
+                width={20} 
+                height={20}
               />
             ),
           }}
