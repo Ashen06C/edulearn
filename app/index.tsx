@@ -52,7 +52,7 @@ export default function HomeScreen() {
               style={styles.button}
               onPress={() => router.push("/signup")}
             >
-              <Text style={styles.inputbuttontext}>Start Learning !</Text>
+              <Text style={styles.inputbuttontext}>Start Reading !</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
